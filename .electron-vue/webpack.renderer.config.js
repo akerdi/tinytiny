@@ -101,6 +101,10 @@ let rendererConfig = {
             name: 'fonts/[name]--[folder].[ext]'
           }
         }
+      },
+      {
+        test: /\.pug$/,
+        loader: 'pug-plain-loader'
       }
     ]
   },
