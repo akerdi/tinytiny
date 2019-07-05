@@ -9,6 +9,10 @@
     div.f-m-t-10
       span 压缩文件目录: {{filePath}}
       span.f-m-t-10 {{getFilePathErr}}
+    div.f-m-t-10
+      div(v-for="(imgName, index) in fileList" :key="index") {{imgName}}
+      span.f-m-t-10 {{getFilePathErr}}
+    el-button(@click="startCompress") 开始压缩
 </template>
 
 
@@ -20,34 +24,34 @@
     data () {
       return {
         filePath: "",
+        getFilePathErr: '',
+        fileList: '', // png、jpeg、jpg 文件列出
         getFilePathErr: ''
       }
     },
     methods: {
-      open (link) {
-        this.$electron.shell.openExternal(link)
-      },
-      change (value) {
-        console.log('-0--00000', value)
-      },
       buttonClick () {
-        this.$electron.ipcRenderer.send('dialogToGetFilePath', '')
+        this.$electron.ipcRenderer.send('dialogToGetFilePath', {})
+      },
+      startCompress () {
+        this.$electron.ipcRenderer.send('startCompressImgFile', {})
       }
     },
     mounted () {
-      this.$electron.ipcRenderer.on('messageOne', (event, msg) => {
-        console.log(event, ' :::event, msg::::', msg)
-        console.log('thisthisthis', this)
-        this.filePath = '2222222'
-        setTimeout(() => {
-          this.$electron.ipcRenderer.send('messageTwo', 'heihei')
-        }, 3000)
-      })
       this.$electron.ipcRenderer.on('getedFilePath', (event, msg) => {
         if (msg.err) {
           this.getFilePathErr = msg.err
         } else {
           this.filePath = msg.path
+        }
+      })
+      this.$electron.ipcRenderer.on('didReadFileList', (event, msg) => {
+        console.log('didReadFileList:::: ', msg)
+        if (msg.code === 500) {
+          this.getFileListErr = msg.err
+        } else {
+          this.fileList = msg.res // msg.res.join('\n\r')
+          console.log(msg.res)
         }
       })
     }
@@ -65,6 +69,7 @@
 
   main {
     padding: 20px;
+    margin: 0px auto;
   }
 
   body { font-family: 'Source Sans Pro', sans-serif; }
