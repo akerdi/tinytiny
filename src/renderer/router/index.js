@@ -3,14 +3,14 @@ import Router from 'vue-router'
 
 Vue.use(Router)
 
-const LandingPage = require('@/components/LandingPage').default
+const HomePage = require('@/pages/home').default
 
 export default new Router({
   routes: [
     {
       path: '/',
-      name: 'landing-page',
-      component: LandingPage
+      name: 'home',
+      component: HomePage
     },
     {
       path: '*',

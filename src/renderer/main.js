@@ -3,10 +3,13 @@ import axios from 'axios'
 
 import App from './App'
 import router from './router'
-import store from './store'
-
+// import store from './store'
 import ElementUI from 'element-ui'
+
+import 'babel-polyfill'
+
 import 'element-ui/lib/theme-chalk/index.css'
+import '@/assets/styles/common.scss'
 
 if (!process.env.IS_WEB) Vue.use(require('vue-electron'))
 Vue.http = Vue.prototype.$http = axios
@@ -17,6 +20,5 @@ Vue.use(ElementUI)
 new Vue({
   components: { App },
   router,
-  store,
   template: '<App/>'
 }).$mount('#app')
