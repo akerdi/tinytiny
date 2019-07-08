@@ -7,8 +7,10 @@ axios.defaults.withCredentials = true
 
 if (process.env.NODE_ENV === 'development') {
   axios.defaults.baseURL = 'http://localhost:7700/'
-  console.log('axios.defaults.baseURL::: ', axios.defaults.baseURL)
 }
+
+export const baseURL = axios.defaults.baseURL
+console.log('axios.defaults.baseURL::: ', axios.defaults.baseURL)
 
 axios.interceptors.request.use(
   config => {

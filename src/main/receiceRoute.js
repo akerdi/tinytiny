@@ -5,24 +5,7 @@ import util from 'util'
 import callAsync from './awaitCall'
 import tinify from 'tinify'
 import _ from 'lodash'
-import { login, getTinyKeyWithAmount } from './service/index'
-
-const loginFuction = async function (username, password) {
-  if (!username || !password) {
-    throw new Error('参数有误!!!')
-  }
-  const params = {
-    username,
-    password
-  }
-  const [err, res] = await callAsync(login(params))
-  if (err) {
-    return console.log('11111111', err)
-  }
-  console.log('res user had just login with response: ', res.data)
-}
-
-loginFuction('aker', '123')
+import { getTinyKeyWithAmount, userProfile } from './service/index'
 
 import SendRoute from './sendRoute'
 
@@ -51,13 +34,12 @@ ipcMain.on('startCompressImgFile', async () => {
   const params = {
     amount: needCompressFiles.length
   }
-  const [err, res] = await callAsync(getTinyKeyWithAmount(params))
+  const [err, res] = await callAsync(userProfile(params))
   if (err) {
     console.log('errrrrrr', err.response.data)
   }
   console.log('getTinykeyWithAmount result::', res)
   // tinify.key = 'xAt3TXhah69ifArpJduRsVXMCJ2jSKgF'
-
   return
   //现在才开始压缩
   if (!tinytinyPath) return console.log("-------hav't select images path")

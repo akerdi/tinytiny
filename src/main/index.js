@@ -2,6 +2,7 @@ import { app, BrowserWindow } from 'electron'
 
 import SendRoute from './sendRoute'
 import receiceRoute from './receiceRoute'
+import { userLoginValidation } from './service'
 
 
 
@@ -44,7 +45,11 @@ app.on('activate', () => {
     createWindow()
   }
 })
-
+app.on('ready', () => {
+  console.log('@@@@@@@@@@@@@@@@@@@@@@@')
+  // TODO 这里判别用户是否已经登录了
+  userLoginValidation()
+})
 /**
  * Auto Updater
  *
