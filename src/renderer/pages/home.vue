@@ -18,7 +18,7 @@
         el-table-column(prop='finish' label="是否完成" width="60")
           template(slot-scope='scope')
             el-checkbox(v-model="scope.row.finish" :disabled="true")
-
+    el-button.clearCookie(type="primary" @click='clearCookie') 清除Cookie
     el-button.startCompress(v-show="fileList.length" @click="startCompress" :loading="startCompressing" type="primary") 开始压缩
 </template>
 
@@ -35,6 +35,9 @@
       }
     },
     methods: {
+      clearCookie () {
+        this.$electron.ipcRenderer.send('clearCookieAction', {})
+      },
       buttonClick () {
         this.$electron.ipcRenderer.send('dialogToGetFilePath', {})
       },
@@ -106,6 +109,11 @@
     font-family: 'Source Sans Pro', sans-serif;
     width: 100%;
     height: 100%;
+  }
+  .clearCookie {
+    position: fixed;
+    bottom: 20px;
+    left: 20px;
   }
   .startCompress {
     position: fixed;

@@ -5,7 +5,7 @@ import util from 'util'
 import callAsync from './awaitCall'
 import tinify from 'tinify'
 import _ from 'lodash'
-import { getTinyKeyWithAmount, userProfile } from './service/index'
+import { getTinyKeyWithAmount, userProfile, clearCookie } from './service/index'
 
 import SendRoute from './sendRoute'
 
@@ -19,6 +19,10 @@ let selectFiles = []
 let isStartedCompress = false
 
 let DEBUG = true
+
+ipcMain.on('clearCookieAction', () => {
+  clearCookie()
+})
 
 ipcMain.on('selectImgChanged', (event, message) => {
   const imgObject = selectFiles[message.index]
@@ -34,13 +38,11 @@ ipcMain.on('startCompressImgFile', async () => {
   const params = {
     amount: needCompressFiles.length
   }
-  const [err, res] = await callAsync(userProfile(params))
+  const [err, res] = await callAsync(getTinyKeyWithAmount(params))
   if (err) {
     console.log('errrrrrr', err.response.data)
   }
-  console.log('getTinykeyWithAmount result::', res)
-  // tinify.key = 'xAt3TXhah69ifArpJduRsVXMCJ2jSKgF'
-  return
+  console.log('getTinykeyWithAmount result::', res.data)
   //现在才开始压缩
   if (!tinytinyPath) return console.log("-------hav't select images path")
   if (!selectFiles || !selectFiles.length) return console.log('-------no file to compress')
