@@ -8,23 +8,25 @@ export const login = params => {
 }
 export const userProfile = params => {
   return axios({
-    method: 'get',
-    url: '/api/user/profile',
-    headers: {
-      Cookie: userCookie
-    }
+    method: 'get', url: '/api/user/profile',
+    headers: { Cookie: userCookie }
   })
 }
 export const getTinyKeyWithAmount = params => {
   return axios({
-    method: 'post',
-    url: '/api/tiny/getTinyKey',
-    headers: {
-      Cookie: userCookie
-    },
-    data: params
+    method: 'post', url: '/api/tiny/getTinyKey',
+    headers: { Cookie: userCookie }, data: params
   })
 }
+export const finishTask = params => {
+  return axios({
+    method: 'post', url: '/api/tiny/finishTiny',
+    headers: { Cookie: userCookie }, data: params
+  })
+}
+
+
+//////////////
 export const clearCookie = () => {
   storage.clear(err => {
     console.log('start clear all cookies')

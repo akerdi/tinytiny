@@ -1,7 +1,7 @@
 <template lang="pug">
   div
     main.flex-colume-center.f-m-t-44
-      span.maxWidth400 &nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp本程序帮助用户选取压缩文件. 请选中下面按钮选取要进行压缩的文件目录, 目录查找层级为2层.
+      span.maxWidth400 &nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp本程序帮助用户选取压缩文件. 请选中下面按钮选取要进行压缩的文件目录, 目录查找层级为1层.
       div.f-m-t-10
         el-button(:disabled="startCompressing" type="primary" @click="buttonClick") 选取读取的目录
       div.f-m-t-10
@@ -17,9 +17,9 @@
             el-checkbox(v-model="scope.row.select" @change="selectChange(scope.row, scope.$index)" :disabled="startCompressing")
         el-table-column(prop='finish' label="是否完成" width="60")
           template(slot-scope='scope')
-            el-checkbox(v-model="scope.row.finish" :disabled="true")
+            el-checkbox(v-model="scope.row.success" :disabled="true")
     el-button.clearCookie(type="primary" @click='clearCookie') 清除Cookie
-    el-button.startCompress(v-show="fileList.length" @click="startCompress" :loading="startCompressing" type="primary") 开始压缩
+    el-button.startCompress(v-show="fileList.length" @click="startCompress" :loading="startCompressing" type="primary") {{compressBtnTitle}}
 </template>
 
 <script>
@@ -31,7 +31,8 @@
         getFilePathErr: '',
         fileList: [], // png、jpeg、jpg 文件列出
         getFilePathErr: '',
-        startCompressing: false
+        startCompressing: false,
+        compressBtnTitle: '开始压缩'
       }
     },
     methods: {
@@ -67,9 +68,10 @@
         } else {
           this.fileList = msg.res
         }
+        this.compressBtnTitle = '开始压缩'
       })
       this.$electron.ipcRenderer.on('indexImgIsFinished', (event, msg) => {
-        this.fileList[msg.index].finish = true
+        this.fileList[msg.index].success = true
       })
       this.$electron.ipcRenderer.on('compressComplete', (event, msg) => {
         this.startCompressing = false
@@ -78,7 +80,8 @@
           message: '文件路径: ' + msg.folder,
           duration: 0,
           offset: 120
-        })
+        }),
+        this.compressBtnTitle = '再次压缩'
       })
     }
   }
