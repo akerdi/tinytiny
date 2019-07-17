@@ -2,6 +2,7 @@ import axios, { baseURL } from './http'
 // import { session } from 'electron'
 import storage from 'electron-json-storage'
 import callAsync, { call } from '../awaitCall'
+import User, { updateUserStatus } from './user'
 
 export const login = params => {
   return axios.post('/api/user/login', params)
@@ -73,8 +74,12 @@ const loginFuction = async function (username, password) {
     if (setCookieErr) {
       console.log('没有保存成功用户的cookie', setCookieErr)
     }
+    User.userProfile = res.data
+    updateUserStatus(1)
     return true
   } else {
+    User.userProfile = null
+    updateUserStatus(2)
     console.log('没有登录成功')
     return false
   }

@@ -1,13 +1,13 @@
 <template lang="pug">
   div
     main.flex-colume-center.f-m-t-44
-      span.maxWidth400 &nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp本程序帮助用户选取压缩文件. 请选中下面按钮选取要进行压缩的文件目录, 目录查找层级为1层.
+      span.maxWidth450 &nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp本程序帮助用户选取压缩文件. 请选中下面按钮选取要进行压缩的文件目录, 目录查找层级为1层.
       div.f-m-t-10
         el-button(:disabled="startCompressing" type="primary" @click="buttonClick") 选取读取的目录
       div.f-m-t-10
         span(v-show="fileList.length") 压缩文件目录: {{filePath}}
         span.f-m-t-10(v-show="!fileList.length") {{getFilePathErr}}
-      el-table.f-m-t-20.f-m-l-20.f-m-b-60(:data='fileList' style='width: 470px'  highlight-current-row='')
+      el-table.f-m-t-20.f-m-l-20.tableMarginBottom(:data='fileList' style='width: 500px'  highlight-current-row='')
         el-table-column(type="index" align='left' width='40')
           template(slot-scope='scope')
             span {{scope.$index + 1}}
@@ -18,6 +18,9 @@
         el-table-column(prop='finish' label="是否完成" width="60")
           template(slot-scope='scope')
             el-checkbox(v-model="scope.row.success" :disabled="true")
+    .personal
+      div 用户名: {{this.user.username}}
+      div 剩&nbsp&nbsp&nbsp&nbsp余: {{this.user.rest}}
     el-button.clearCookie(type="primary" @click='clearCookie') 清除Cookie
     el-button.startCompress(v-show="fileList.length" @click="startCompress" :loading="startCompressing" type="primary") {{compressBtnTitle}}
 </template>
@@ -32,7 +35,11 @@
         fileList: [], // png、jpeg、jpg 文件列出
         getFilePathErr: '',
         startCompressing: false,
-        compressBtnTitle: '开始压缩'
+        compressBtnTitle: '开始压缩',
+        user: {
+          username: 'aker',
+          rest: 100
+        }
       }
     },
     methods: {
@@ -45,6 +52,9 @@
       startCompress () {
         this.startCompressing = true
         this.$electron.ipcRenderer.send('startCompressImgFile', {})
+      },
+      getUserProfile () {
+        this.$electron.ipcRenderer.send('getUserProfile')
       },
       selectChange(data, index) {
         const message = {
@@ -97,15 +107,15 @@
   }
 
   main {
-    max-width: 550px;
+    max-width: 600px;
     min-width: 500px;
     margin: 0 auto;
   }
-  .f-m-b-60 {
-    margin-bottom: 60px;
+  .tableMarginBottom {
+    margin-bottom: 70px;
   }
-  .maxWidth400 {
-    max-width: 400px;
+  .maxWidth450 {
+    max-width: 450px;
   }
 
   body {
@@ -123,5 +133,14 @@
     bottom: 20px;
     left: 50%;
     transform: translateX(-50%); // 这句话可以让position fixed 的div 居中
+  }
+  .personal {
+    position: fixed;
+    top: 20px;
+    left: 20px;
+    max-width: 150px;
+    padding: 10px;
+    background-color: white;
+    opacity: 0.8;
   }
 </style>

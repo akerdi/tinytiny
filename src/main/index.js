@@ -1,7 +1,7 @@
 import { app, BrowserWindow } from 'electron'
 
 import SendRoute from './sendRoute'
-import receiceRoute from './receiceRoute'
+import './receiceRoute'
 import { userLoginValidation } from './service'
 
 
@@ -23,7 +23,7 @@ const winURL = process.env.NODE_ENV === 'development'
   : `file://${__dirname}/index.html`
 function createWindow () {
   mainWindow = new BrowserWindow({
-    height: 800,
+    height: 450,
     useContentSize: true,
     width: 800
   })
@@ -47,8 +47,8 @@ app.on('activate', () => {
 })
 app.on('ready', () => {
   console.log('@@@@@@@@@@@@@@@@@@@@@@@')
-  // TODO 这里判别用户是否已经登录了
-  userLoginValidation()
+  // TODO for debug 这里判别用户是否已经登录了
+  // userLoginValidation()
 })
 /**
  * Auto Updater

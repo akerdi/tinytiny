@@ -1,4 +1,5 @@
 import axios from 'axios'
+import User, { updateUserStatus } from './user'
 
 axios.defaults.timeout = 5000
 axios.defaults.retry = 3
@@ -30,15 +31,9 @@ axios.interceptors.response.use(
       switch (error.response.status) {
         case 401:
         case 403:
-          if (error.response.data === 'Login Reqeust') {
-            // Store.commit('user/' + USER_SIGNOUT)
-            // Store.commit('user/' + USER_CHECK, true)
-            // if (router.history.current.path !== '/') {
-            //   // return router.push({ name: 'login' })
-            //   // need Login
-            // } else {
-            //   return Promise.reject(error)
-            // }
+          if (error.response.data === 'Login Request') {
+            User.userProfile = null
+            updateUserStatus(2, new Error('Login Request'))
           }
       }
     }
