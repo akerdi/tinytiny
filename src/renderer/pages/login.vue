@@ -4,19 +4,21 @@
       .logo
         img(src='@/assets/images/logo.png' alt='qi fan')
       transition(name='el-zoom-in-center')
-        el-form(v-show="showContent" ref="loginForm" :model="loginForm" :rules="loginRule" auto-complete="off" label-position="left")
+        el-form.formClass(v-show="showContent" ref="loginForm" :model="loginForm" :rules="loginRule" auto-complete="off" label-position="left")
           el-form-item(prop='username')
-            el-input.account(type="text" v-model="loginForm.username", size="medium" placeholder="account length >= 3" auto-complete="off")
+            el-input.input.account(type="text" v-model="loginForm.username", size="medium" placeholder="account length >= 3" auto-complete="off")
           el-form-item(prop="password")
-            el-input(type="password" v-model="loginForm.password" placeholder='password length >= 3' size="medium" @keyup.enter.native="login" :maxlength="40" auto-complete="off")
+            el-input.input(type="password" v-model="loginForm.password" placeholder='password length >= 3' size="medium" @keyup.enter.native="login" :maxlength="40" auto-complete="off")
           el-form-item
             .flex-row-center
-              el-button.login_btn.f-m-r-10.f-m-r-5(type="primary" @click.native.prevent="login" :loading="loginLoading") login
-              el-button.login_btn(type="primary" @click.native.prevent="gotoRegister" :loading="loginLoading") register
+              el-button.login_btn.f-m-r-10.f-m-r-20(type="primary" @click.native.prevent="login" :loading="loginLoading") Login
+              el-button.login_btn(type="primary" @click.native.prevent="gotoRegister" :loading="loginLoading") Regist
 </template>
 
 <script>
+import { HTTPSend, LoginHTTPListener, destroyOn } from '@/service'
 export default {
+  name: 'login',
   data () {
     return {
       loginForm: {
@@ -24,22 +26,22 @@ export default {
         password: ''
       },
       loginRule: {
-        username: [{ required: true, message: '请输入账号', trigger: 'blur', min: 3, max: 20 }],
-        password: [{ required: true, message: '请输入密码, 长度为3~40个字符', trigger: 'blur', min:3, max: 40}]
+        username: [{ required: true, message: 'please enter account', trigger: 'blur', min: 3, max: 20 }],
+        password: [{ required: true, message: 'password length < 40 charactor', trigger: 'blur', min:3, max: 40}]
       },
       showContent: false,
-      loginLoading: false,
+      loginLoading: false
     }
   },
   methods: {
     login () {
       this.verifyForm((message) => {
-        this.$electron.ipcRenderer.send('userLogin', message)
+        HTTPSend('userLogin', message)
       })
     },
     gotoRegister () {
       this.verifyForm((message) => {
-        this.$electron.ipcRenderer.send('userRegister', message)
+        HTTPSend('userRegister', message)
       })
     },
     verifyForm (cb) {
@@ -51,24 +53,30 @@ export default {
         cb(message)
         this.loginLoading = true
       })
+    },
+    httpCallback (eventName, data) {
+      switch (eventName) {
+        case 'userLoginCallback':
+          if (data.err) {
+            this.$message.error(data.err.response.data)
+            this.loginLoading = false
+          }
+          break
+        case 'userRegisterCallback':
+          if (data.err) {
+            this.$message.error(data.err.response.data)
+            this.loginLoading = false
+          }
+          break
+      }
     }
   },
   mounted () {
     this.showContent = true
-    this.$electron.ipcRenderer.on('userRegisterCallback', (event, msg) => {
-      console.log('userRegisterCallback:', msg)
-      if (msg.err) {
-        this.$message.error(msg.err.response.data)
-        this.loginLoading = false
-      }
-    })
-    this.$electron.ipcRenderer.on('userLoginCallback', (event, msg) => {
-      console.log('userLoginCallback:', msg)
-      if (msg.err) {
-        this.$message.error(msg.err.response.data)
-        this.loginLoading = false
-      }
-    })
+    LoginHTTPListener(this.httpCallback)
+  },
+  beforeDestroy () {
+    destroyOn('login')
   }
 }
 </script>
@@ -83,9 +91,8 @@ export default {
     background-color: blueviolet;
     margin-top: 20vh;
     width: calc(100% - 50%);
+    min-width: 320px;
     display: block;
-    // flex-direction: column;
-    // justify-content: center;
     border-radius: 8px;
     .logo {
       margin: 0 auto;
@@ -94,10 +101,19 @@ export default {
         margin-bottom: 20px;
       }
     }
+    .formClass {
+      width: 100%;
+    }
+    .input {
+      min-width: 250px;
+    }
     .login_btn {
       max-width: 100px;
+      min-width: 85px;
       margin-bottom: 20px;
     }
   }
+
 }
 </style>
+

@@ -26,65 +26,75 @@ let isStartedCompress = false
 
 let DEBUG = process.env.NODE_ENV === 'development'
 
+ipcMain.on('http', (event, message) => {
+  logger('[ipcMain http] receive message:', JSON.stringify(message))
+  switch (message.eventName) {
+    case 'userLogin':
+      userLoginValidation(message.data.username, message.data.password)
+      break
+    case 'userRegister':
+      userRegister(message.data.username, message.data.password)
+      break
+    case 'getUserProfile':
+      getUserProfile()
+      break
+    case 'clearCookieAction':
+      clearCookie()
+      User.userProfile = null
+      updateUserStatus(2)
+      break
+    case 'selectImgChanged':
+      const imgObject = selectFiles[message.data.index]
+      imgObject.select = message.data.select
+      break
+    case 'startCompressImgFile':
+      startCompressImgFile()
+      break
+    case 'dialogToGetFilePath':
+      dialogToGetFilePath()
+      break
+  }
+})
+
 ipcMain.on('getCookie', () => {
-  logger('going to get cookie')
   getCookie()
 })
 
-// userLoginCallback
-ipcMain.on('userLogin', (event, message) => {
-  logger('[userLogin] did receive message:', message)
-  userLoginValidation(message.username, message.password)
-})
-
-// userRegisterCallback
-ipcMain.on('userRegister', (event, message) => {
-  logger('[userRegister] did receive message:', message)
-  userRegister(message.username, message.password)
-})
-
-ipcMain.on('getUserProfile', async () => {
+const getUserProfile = async () => {
   const [err, result] = await callAsync(userProfile())
   if (err) {
     User.userProfile = null
     updateUserStatus(2, err)
-    return logger('pgetUserProfile[ got err:', err.response.data)
+    return logger('[getUserProfile] got err:', err.response.data)
   }
   User.userProfile = result.data
   updateUserStatus(1)
-  SendRoute.sendPromise('getUserProfileCallback', User.userProfile)
+  SendRoute.sendHome('getUserProfileCallback', User.userProfile)
   logger('[getUserProfile] get result:', result.data)
   // tell frontend to rerender!
-})
+}
 
-ipcMain.on('clearCookieAction', () => {
-  logger('[clearCookieAction] going to clear cookie')
-  clearCookie()
-  User.userProfile = null
-  updateUserStatus(2)
-})
-
-ipcMain.on('selectImgChanged', (event, message) => {
-  const imgObject = selectFiles[message.index]
-  imgObject.select = message.data.select
-})
-
-ipcMain.on('startCompressImgFile', async () => {
+const startCompressImgFile = async () => {
   const needCompressFiles = selectFiles.filter((f) => {
     return f.select === true
   })
-  if (!tinytinyPath) return logger("-------hav't select images path")
-  if (!needCompressFiles || !needCompressFiles.length) return logger('-------no file to compress')
+  if (!tinytinyPath) {
+    isStartedCompress = true
+    return SendRoute.sendHome('startCompressImgFileCallback', {err: "haven't select images path"})
+  }
+  if (!needCompressFiles || !needCompressFiles.length) {
+    isStartedCompress = true
+    return SendRoute.sendHome('startCompressImgFileCallback', {err: 'no file to compress'})
+  }
   if (isStartedCompress) return
   isStartedCompress = true
   // 每次要进行压缩，先询问服务器当前是否有tiny_key
   // 然后再开始，否则发通知出错了。
-  const params = {
-    amount: needCompressFiles.length
-  }
+  const params = { amount: needCompressFiles.length }
   const [err, res] = await callAsync(getTinyKeyWithAmount(params))
   if (err) {
-    logger('errrrrrr', err.response.data)
+    isStartedCompress = true
+    return SendRoute.sendHome('startCompressImgFileCallback', {err: err.response.data})
   }
   const readyUseDetail = res.data.readyUseDetail
   if (!readyUseDetail || !readyUseDetail.length) return
@@ -97,7 +107,8 @@ ipcMain.on('startCompressImgFile', async () => {
   if (!existDir) {
     const [err] = await callAsync(fsmkdirAsync(tinytinyPath))
     if (err) {
-      logger('[startCompressImgFile] mkdir fail err:', err)
+      isStartedCompress = true
+      return SendRoute.sendHome('startCompressImgFileCallback', {err: err})
     }
   }
 
@@ -108,9 +119,7 @@ ipcMain.on('startCompressImgFile', async () => {
   for (const index in files) {
     const imgFileObject = files[index]
     const account = readyUseDetail[rowIndex]
-    logger('current use account:::::::::', account.key)
     tinify.key = account.key
-    logger('use account ::', account)
     if (DEBUG) {
       await callAsync(debugSimulator(1.3))
       if (useSituation[account.account]) {
@@ -126,7 +135,7 @@ ipcMain.on('startCompressImgFile', async () => {
       }
       imgFileObject.finish = true
       imgFileObject.finishSuccess = true
-      SendRoute.sendPromise('indexImgIsFinished', { index, success: imgFileObject.finishSuccess })
+      SendRoute.sendHome('indexImgIsFinished', { index: imgFileObject.index, success: imgFileObject.finishSuccess })
     } else {
       const imgFileName = imgFileObject.imgPath
       // const select = imgFileObject.select
@@ -136,9 +145,10 @@ ipcMain.on('startCompressImgFile', async () => {
       const [err] = await callAsync(source.toFile(toFile))
       imgFileObject.finish = true
       if (err) {
-        logger('imgFileName:', imgFileName, ' getErr: ', err)
+        logger('compress meet err with img:', imgFileObject)
+        logger('err:', err)
         imgFileObject.finishSuccess = false
-        SendRoute.sendPromise('indexImgIsFinished', { index, success: false})
+        SendRoute.sendHome('indexImgIsFinished', { index: imgFileObject.index, success: false})
         continue
       }
       if (useSituation[account.account]) {
@@ -154,35 +164,28 @@ ipcMain.on('startCompressImgFile', async () => {
       }
       // 标记finish
       imgFileObject.finishSuccess = true
-      SendRoute.sendPromise('indexImgIsFinished', { index, success: imgFileObject.finishSuccess })
+      SendRoute.sendHome('indexImgIsFinished', { index: imgFileObject.index, success: imgFileObject.finishSuccess })
     }
   }
   // compress 全部完成
   // tell frontend to show compress complete
-  if (DEBUG) {
-    const index = 1
-    setTimeout(() => {
-      SendRoute.sendPromise('indexImgIsFinished', { index })
-    }, 500)
-  }
-
   isStartedCompress = false
   const finishParams = {
     taskId:res.data._id,
     useCost: JSON.stringify(useSituation)
   }
-  logger('~~~~~~~~~~finishParamsfinishParams~~~', finishParams)
   const [finisheErr, finishNetRes] = await callAsync(finishTask(finishParams))
   if (finisheErr) logger('用户网络有问题??:', finisheErr)
-  logger('finishNetRes::::', finishNetRes.data)
-  SendRoute.sendPromise('compressComplete', { folder: tinytinyPath })
+  SendRoute.sendHome('compressComplete', { folder: tinytinyPath })
+  // 完成时，顺便查询下用户资料
+  getUserProfile()
 
   setTimeout(() => {
     shell.showItemInFolder(tinytinyPath)
   }, 1200)
-})
+}
 
-ipcMain.on('dialogToGetFilePath', () => {
+const dialogToGetFilePath = () => {
   dialog.showSaveDialog({title: '选取保存路径', message: '选取保存路径', nameFieldLabel: '选取保存路径'}, (fileName) => {
     const message = {}
     if (fileName === undefined) {
@@ -194,10 +197,10 @@ ipcMain.on('dialogToGetFilePath', () => {
       selectPath = message.path
       tinytinyPath = path.join(selectPath, 'tinytiny')
     }
-    SendRoute.sendPromise('getedFilePath', message)
+    SendRoute.sendHome('getedFilePath', message)
     readFileList(selectPath)
   })
-})
+}
 
 async function readFileList(readFilePath) {
   const [err, res] = await callAsync(fsreadirAsync(readFilePath))
@@ -218,17 +221,20 @@ async function readFileList(readFilePath) {
       }
       return _.indexOf(['jpg', 'png', 'jpeg'], fileTypeObject.fileType) !== -1
     })
+    let index = -1
     message.res = message.res.map(imgFileName => {
+      index ++
       return {
         imgPath: imgFileName,
         select: true, // 任务是否选中为执行
         finish: false, // 任务是否处理过
-        finishSuccess: false // 任务处理过是否成功
+        finishSuccess: false, // 任务处理过是否成功
+        index
       }
     })
     selectFiles = message.res
   }
-  await callAsync(SendRoute.sendPromise('didReadFileList', message))
+  await callAsync(SendRoute.sendHome('didReadFileList', message))
 }
 
 function debugSimulator(ms) {

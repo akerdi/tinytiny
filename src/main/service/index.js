@@ -10,7 +10,6 @@ export const login = params => {
   return axios.post('/api/user/login', params)
 }
 export const register = params => {
-  console.log('~~~~~~~~~~~~~~~~~', params)
   return axios.post('/api/user/register', params)
 }
 export const userProfile = params => {
@@ -69,14 +68,12 @@ export const userLoginValidation = async (username, password) => {
   }
   userCookie = res
   axios.defaults.headers.post['Cookie'] = userCookie
-  console.log("user's cookie is :", res)
+  console.log("cookie is :", res)
 }
 export const userRegister = async (username, password) => {
-  console.log('@@@@@@@@@@@@@@@@2', username, password)
   const [err, res] = await callAsync(register({username, password}))
   if (err) {
-    // TODO 用户注册错误
-    SendRoute.sendPromise('userRegisterCallback', { err })
+    SendRoute.sendLogin('userRegisterCallback', { err })
     return logger.log('register Error:', err.response)
   }
   loginAfterWithResponse(res)
@@ -93,8 +90,7 @@ const loginFuction = async function (username, password) {
   }
   const [err, res] = await callAsync(login(params))
   if (err) {
-    // TODO 用户登录错误
-    SendRoute.sendPromise('userLoginCallback', { err })
+    SendRoute.sendLogin('userLoginCallback', { err })
     return console.log('loginError: ', err.response)
   }
   loginAfterWithResponse(res)
@@ -106,12 +102,11 @@ async function loginAfterWithResponse (res) {
       url: baseURL,
       value: _cookie
     }
-    console.log('cookie:::', cookie)
     userCookie = cookie.value
     axios.defaults.headers.post['Cookie'] = userCookie
     const [setCookieErr] = await callAsync(sessionSetCookie(cookie))
     if (setCookieErr) {
-      console.log('没有保存成功用户的cookie', setCookieErr)
+      console.log('save cookie fail: ', setCookieErr)
     }
     User.userProfile = res.data
     updateUserStatus(1)
@@ -119,16 +114,14 @@ async function loginAfterWithResponse (res) {
   } else {
     User.userProfile = null
     updateUserStatus(2)
-    console.log('没有登录成功')
+    console.log('login fail')
     return false
   }
 }
 function getCookieFromRes(res) {
   const cookies = res.headers['set-cookie']
   for (const cookieStr of cookies) {
-    console.log('!!!!!!!!!!!!!', cookieStr)
     if (/ahuang-budget=/.test(cookieStr)) {
-      console.log(cookieStr)
       return cookieStr
     }
   }

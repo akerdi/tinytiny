@@ -12,3 +12,27 @@ SendRoute.sendPromise = function (eventName="", message={}) {
     })
   })
 }
+SendRoute.sendHttp = function (eventName="", message={}) {
+  message = {
+    eventName,
+    data: message
+  }
+  return SendRoute.sendPromise('http', message)
+}
+SendRoute.sendLogin = function (eventName="", message={}) {
+  message = {
+    eventName,
+    data: message
+  }
+  return SendRoute.sendPromise('login', message)
+}
+SendRoute.sendHome = function (eventName="", message={}) {
+  message = {
+    eventName,
+    data: message
+  }
+  return SendRoute.sendPromise('home', message)
+}
+SendRoute.sendUserStatusChange = function (message) {
+  return SendRoute.sendPromise('userStatusChange', message)
+}

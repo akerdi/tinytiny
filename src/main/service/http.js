@@ -8,6 +8,8 @@ axios.defaults.withCredentials = true
 
 if (process.env.NODE_ENV === 'development') {
   axios.defaults.baseURL = 'http://localhost:7700/'
+} else {
+  axios.defaults.baseURL = "http://www.ahuang.ml"
 }
 
 export const baseURL = axios.defaults.baseURL

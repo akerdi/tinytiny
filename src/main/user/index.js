@@ -1,4 +1,4 @@
-import SendMessage from '../utils/sendRoute'
+import SendRoute from '../utils/sendRoute'
 import logger from '../utils/logger'
 /**
  * userLoginStatus
@@ -18,7 +18,7 @@ export function updateUserStatus (status, err) {
   const message = { status: userLoginStatus }
   if (err)
     message.err = err
-  SendMessage.sendPromise('userStatusChange', message)
+  SendRoute.sendUserStatusChange(message)
 }
 
 export default {

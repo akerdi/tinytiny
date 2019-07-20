@@ -1,3 +1,4 @@
+import fs from 'fs'
 //获取文件真实类型
 export const getFileMimeType = function(filePath) {
     try {
