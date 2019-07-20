@@ -1,7 +1,7 @@
 import { app, BrowserWindow } from 'electron'
 
-import SendRoute from './sendRoute'
-import './receiceRoute'
+import SendRoute from './utils/sendRoute'
+import './route'
 import { userLoginValidation } from './service'
 
 
@@ -25,7 +25,8 @@ function createWindow () {
   mainWindow = new BrowserWindow({
     height: 450,
     useContentSize: true,
-    width: 800
+    width: 800,
+    x: 0, y: 0
   })
   mainWindow.loadURL(winURL)
   mainWindow.on('closed', () => {
@@ -46,9 +47,10 @@ app.on('activate', () => {
   }
 })
 app.on('ready', () => {
-  console.log('@@@@@@@@@@@@@@@@@@@@@@@')
-  // TODO for debug 这里判别用户是否已经登录了
-  // userLoginValidation()
+  console.log('[App is ready now!]')
+  // 这里判别用户是否已经登录了
+  // app 启动过后才能做相关操作。
+  userLoginValidation()
 })
 /**
  * Auto Updater

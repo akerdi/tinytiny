@@ -12,27 +12,34 @@ export default new Vuex.Store({
   }
 })
 
+// 指定监听
 ipcRenderer.on('userStatusChange', (event, msg) => {
   console.log('[userStatusChange] msg:', msg)
+  let err = null
   if (msg.err) {
-    router.push({path: 'wait', query: {err: msg.err.response.data}})
-  } else {
-    const userLoginStatus = msg.status
-    changeRoute(userLoginStatus)
+    err = msg.err.response.data
   }
+  const userLoginStatus = msg.status
+  changeRoute(userLoginStatus, err)
 })
 
-function changeRoute(userLoginStatus) {
+function changeRoute(userLoginStatus, err) {
+  let routeInfo = null
   switch (userLoginStatus) {
     case 1:
-      router.push({name: 'home'})
+      routeInfo = {name: 'home'}
       break;
     case 2:
-      router.push({name: 'login'})
+      routeInfo = {name: 'login'}
       break;
     default: // 0
-      router.push({name: 'wait'})
+      routeInfo = {name: 'wait'}
       break;
   }
+  if (err) {
+    routeInfo.query = { err }
+  }
+  router.push(routeInfo)
 }
-ipcRenderer.send('getUserProfile')
+ipcRenderer.send('getCookie')
+// ipcRenderer.send('getUserProfile')

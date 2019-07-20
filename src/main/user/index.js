@@ -1,10 +1,10 @@
-import SendMessage from '../sendRoute'
+import SendMessage from '../utils/sendRoute'
 import logger from '../utils/logger'
 /**
  * userLoginStatus
  * wait = 0  // when err, redirect => /wait/text=err
- * login = 1
- * logout = 2
+ * home = 1
+ * login = 2
  */
 export let userLoginStatus = 0
 

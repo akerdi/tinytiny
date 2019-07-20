@@ -2,15 +2,18 @@ import { ipcMain, dialog, shell } from 'electron'
 import fs from 'fs'
 import path from 'path'
 import util from 'util'
-import callAsync from './awaitCall'
+import callAsync from '../lib/awaitCall'
 import tinify from 'tinify'
 import _ from 'lodash'
-import { getTinyKeyWithAmount, finishTask, userProfile, clearCookie } from './service/index'
-import User, { updateUserStatus } from './service/user'
-import { getFileMimeType } from './utils/fileOperation'
-import logger from './utils/logger'
+import {
+  getCookie, getTinyKeyWithAmount, finishTask, userProfile,
+  clearCookie, userLoginValidation, userRegister
+} from '../service'
+import User, { updateUserStatus } from '../user'
+import { getFileMimeType } from '../utils/fileOperation'
+import logger from '../utils/logger'
 
-import SendRoute from './sendRoute'
+import SendRoute from '../utils/sendRoute'
 
 const fsreadirAsync = util.promisify(fs.readdir)
 const fsexistAsync = util.promisify(fs.exists)
@@ -23,20 +26,39 @@ let isStartedCompress = false
 
 let DEBUG = process.env.NODE_ENV === 'development'
 
+ipcMain.on('getCookie', () => {
+  logger('going to get cookie')
+  getCookie()
+})
+
+// userLoginCallback
+ipcMain.on('userLogin', (event, message) => {
+  logger('[userLogin] did receive message:', message)
+  userLoginValidation(message.username, message.password)
+})
+
+// userRegisterCallback
+ipcMain.on('userRegister', (event, message) => {
+  logger('[userRegister] did receive message:', message)
+  userRegister(message.username, message.password)
+})
+
 ipcMain.on('getUserProfile', async () => {
   const [err, result] = await callAsync(userProfile())
   if (err) {
     User.userProfile = null
     updateUserStatus(2, err)
-    return logger('pgetUserProfile[ got err:', err)
+    return logger('pgetUserProfile[ got err:', err.response.data)
   }
   User.userProfile = result.data
   updateUserStatus(1)
+  SendRoute.sendPromise('getUserProfileCallback', User.userProfile)
   logger('[getUserProfile] get result:', result.data)
   // tell frontend to rerender!
 })
 
 ipcMain.on('clearCookieAction', () => {
+  logger('[clearCookieAction] going to clear cookie')
   clearCookie()
   User.userProfile = null
   updateUserStatus(2)

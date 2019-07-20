@@ -37,8 +37,8 @@
         startCompressing: false,
         compressBtnTitle: '开始压缩',
         user: {
-          username: 'aker',
-          rest: 100
+          username: '',
+          rest: 0
         }
       }
     },
@@ -93,6 +93,12 @@
         }),
         this.compressBtnTitle = '再次压缩'
       })
+      this.$electron.ipcRenderer.on('getUserProfileCallback', (event, msg) => {
+        console.log('[getUserProfileCallback] msg::::', msg)
+        this.user.username = msg.username
+        this.user.rest = msg.tinyNum
+      })
+      this.getUserProfile()
     }
   }
 </script>

@@ -1,11 +1,17 @@
 import axios, { baseURL } from './http'
 // import { session } from 'electron'
 import storage from 'electron-json-storage'
-import callAsync, { call } from '../awaitCall'
-import User, { updateUserStatus } from './user'
+import callAsync, { call } from '../lib/awaitCall'
+import User, { updateUserStatus } from '../user'
+import SendRoute from '../utils/sendRoute'
+import logger from '../utils/logger'
 
 export const login = params => {
   return axios.post('/api/user/login', params)
+}
+export const register = params => {
+  console.log('~~~~~~~~~~~~~~~~~', params)
+  return axios.post('/api/user/register', params)
 }
 export const userProfile = params => {
   return axios({
@@ -33,19 +39,47 @@ export const clearCookie = () => {
     console.log('start clear all cookies')
     if (err)
       console.log('clearCookieErr:' , err)
+    userCookie = null
+    updateUserStatus(2, new Error('Login required'))
   })
 }
 let userCookie = ''
-export const userLoginValidation = async () => {
+export const getCookie = async () => {
+  const [err, res] = await callAsync(sessionGetCookie(baseURL))
+  if (err || !res || !res.length) {
+    logger('当前没有cookie')
+    User.userProfile = null
+    updateUserStatus(2)
+    return
+  }
+  userCookie = res
+  axios.defaults.headers.post['Cookie'] = userCookie
+  updateUserStatus(1)
+  logger('[getCookie] currentCookie is :', userCookie)
+}
+export const userLoginValidation = async (username, password) => {
   const [err, res] = await callAsync(sessionGetCookie(baseURL))
   if (err || !res || !res.length) {
     console.log('get defaultSession err or res is empty:', err)
-    // TODO send login page to user
-    return loginFuction('aker', '123')
+    if (!username || !password) {
+      // send login page to user
+      return updateUserStatus(2)
+    }
+    return loginFuction(username, password)
   }
   userCookie = res
-  console.log("user's cookie is :", res)
   axios.defaults.headers.post['Cookie'] = userCookie
+  console.log("user's cookie is :", res)
+}
+export const userRegister = async (username, password) => {
+  console.log('@@@@@@@@@@@@@@@@2', username, password)
+  const [err, res] = await callAsync(register({username, password}))
+  if (err) {
+    // TODO 用户注册错误
+    SendRoute.sendPromise('userRegisterCallback', { err })
+    return logger.log('register Error:', err.response)
+  }
+  loginAfterWithResponse(res)
 }
 
 const loginFuction = async function (username, password) {
@@ -59,8 +93,13 @@ const loginFuction = async function (username, password) {
   }
   const [err, res] = await callAsync(login(params))
   if (err) {
-    return console.log('loginError: ', err)
+    // TODO 用户登录错误
+    SendRoute.sendPromise('userLoginCallback', { err })
+    return console.log('loginError: ', err.response)
   }
+  loginAfterWithResponse(res)
+}
+async function loginAfterWithResponse (res) {
   const _cookie = getCookieFromRes(res)
   if (_cookie) {
     const cookie = {
