@@ -21,8 +21,8 @@
       .tac(style="color: #545454") 更多咨询/定制/合作请联系QQ: 767838865
     .personal
       div 用户名: {{this.user.username}}
-      div 剩&nbsp&nbsp&nbsp&nbsp余: {{this.user.rest}}
-    //- el-button.clearCookie(type="primary" @click='clearCookie') 清除Cookie
+      div.f-m-t-5 剩&nbsp&nbsp&nbsp&nbsp余: {{this.user.rest}}
+    el-button.clearCookie(type="primary" @click='clearCookie') 清除Cookie
     el-button.startCompress(v-show="fileList.length" @click="startCompress" :loading="startCompressing" type="primary") {{compressBtnTitle}}
 </template>
 
@@ -45,6 +45,9 @@ export default {
     }
   },
   methods: {
+    clearCookie () {
+      HTTPSend('clearCookieAction', {})
+    },
     buttonClick () {
       HTTPSend('dialogToGetFilePath')
     },
@@ -153,7 +156,7 @@ export default {
     position: fixed;
     top: 20px;
     left: 20px;
-    max-width: 150px;
+    max-width: 200px;
     padding: 10px;
     background-color: white;
     opacity: 0.8;

@@ -13,6 +13,9 @@
             .flex-row-center
               el-button.login_btn.f-m-r-10.f-m-r-20(type="primary" @click.native.prevent="login" :loading="loginLoading") Login
               el-button.login_btn(type="primary" @click.native.prevent="gotoRegister" :loading="loginLoading") Regist
+    .f-tac SALES!!! Gain 200 useage after regist
+    .f-tac.f-m-t-5 活动日!!! 注册送200张任意使用券
+    .tac.f-m-t-5(style="color: #545454") 更多咨询/定制/合作请联系QQ: 767838865
 </template>
 
 <script>
@@ -85,6 +88,10 @@ export default {
 .container {
   width: 100vw;
   height: 100vh;
+  .f-tac {
+    font-weight: bold;
+    font-size: 15px;
+  }
 
   .loginPanel {
     margin: 0 auto;
