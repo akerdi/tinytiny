@@ -42,3 +42,9 @@ This project was generated with [electron-vue](https://github.com/SimulatedGREG/
   transform: translateX(-50%); // 这句话可以让position fixed 的div 居中
 }
 ```
+
+## build
+
+    打包mac yarn build: node .electron-vue/build.js && electron-builder
+
+    打包win yarn build: node .electron-vue/build.js && electron-builder -w

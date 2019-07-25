@@ -22,7 +22,7 @@
     .personal
       div 用户名: {{this.user.username}}
       div.f-m-t-5 剩&nbsp&nbsp&nbsp&nbsp余: {{this.user.rest}}
-    el-button.clearCookie(type="primary" @click='clearCookie') 清除Cookie
+    //- el-button.clearCookie(type="primary" @click='clearCookie') 清除Cookie
     el-button.startCompress(v-show="fileList.length" @click="startCompress" :loading="startCompressing" type="primary") {{compressBtnTitle}}
 </template>
 
@@ -45,9 +45,9 @@ export default {
     }
   },
   methods: {
-    clearCookie () {
-      HTTPSend('clearCookieAction', {})
-    },
+    // clearCookie () {
+    //   HTTPSend('clearCookieAction', {})
+    // },
     buttonClick () {
       HTTPSend('dialogToGetFilePath')
     },

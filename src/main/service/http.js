@@ -6,11 +6,12 @@ axios.defaults.retry = 3
 axios.defaults.retryDelay = 800
 axios.defaults.withCredentials = true
 
-if (process.env.NODE_ENV === 'development') {
-  axios.defaults.baseURL = 'http://localhost:7700/'
-} else {
-  axios.defaults.baseURL = "http://www.ahuang.ml"
-}
+// if (process.env.NODE_ENV === 'development') {
+//   axios.defaults.baseURL = 'http://localhost:7700/'
+// } else {
+//   axios.defaults.baseURL = "http://www.ahuang.ml"
+// }
+axios.defaults.baseURL = "http://www.ahuang.ml"
 
 export const baseURL = axios.defaults.baseURL
 console.log('axios.defaults.baseURL::: ', axios.defaults.baseURL)

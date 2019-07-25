@@ -10,7 +10,7 @@ export let userLoginStatus = 0
 
 export function updateUserStatus (status, err) {
   logger('currentUserLoginStatus: ', userLoginStatus, ' : status: : ', status)
-  if (userLoginStatus === status) {
+  if (userLoginStatus === status && userLoginStatus !== 2) {
     // 没有必要改变
     return
   }
