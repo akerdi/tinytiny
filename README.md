@@ -1,27 +1,5 @@
 # tinytiny
 
-> An electron-vue project
-
-#### Build Setup
-
-``` bash
-# install dependencies
-npm install
-
-# serve with hot reload at localhost:9080
-npm run dev
-
-# build electron application for production
-npm run build
-
-# run unit tests
-npm test
-
-
-```
-
----
-
 This project was generated with [electron-vue](https://github.com/SimulatedGREG/electron-vue) using [vue-cli](https://github.com/vuejs/vue-cli). Documentation about the original structure can be found [here](https://simulatedgreg.gitbooks.io/electron-vue/content/index.html).
 
 # Other important progress learning skill
@@ -48,3 +26,11 @@ This project was generated with [electron-vue](https://github.com/SimulatedGREG/
     打包mac yarn build: node .electron-vue/build.js && electron-builder
 
     打包win yarn build: node .electron-vue/build.js && electron-builder -w
+
+## TODOs
+
+- [] concurentlly start task (current: serially)
+
+- [] remember user last select path
+
+- [] user check out whether PROGRAM "cover source (together with a new directory)" or "a new directory name 'tiny'(COMPLETE)"
