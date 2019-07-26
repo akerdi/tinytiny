@@ -11,6 +11,7 @@ const CopyWebpackPlugin = require('copy-webpack-plugin')
 const MiniCssExtractPlugin = require('mini-css-extract-plugin')
 const HtmlWebpackPlugin = require('html-webpack-plugin')
 const { VueLoaderPlugin } = require('vue-loader')
+const UglifyJsPlugin = require('uglifyjs-webpack-plugin')
 
 /**
  * List of node_modules to include in webpack bundle
@@ -114,6 +115,18 @@ let rendererConfig = {
   },
   plugins: [
     new VueLoaderPlugin(),
+    new UglifyJsPlugin({
+      uglifyOptions: {
+        ecma: 8,
+        output: {
+          comments: false,
+          beautify: false
+        },
+        warnings: false
+      },
+      sourceMap: false,
+      parallel: true
+    }),
     new MiniCssExtractPlugin({filename: 'styles.css'}),
     new HtmlWebpackPlugin({
       filename: 'index.html',

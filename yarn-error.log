@@ -1,20 +1,30 @@
 Arguments: 
-  C:\Program Files\nodejs\node.exe C:\Program Files (x86)\Yarn\bin\yarn.js
+  /usr/local/bin/node /usr/local/Cellar/yarn/1.15.2/libexec/bin/yarn.js add uglify-webpack-plugin -D
 
 PATH: 
-  C:\Program Files (x86)\Parallels\Parallels Tools\Applications;C:\Windows\system32;C:\Windows;C:\Windows\System32\Wbem;C:\Windows\System32\WindowsPowerShell\v1.0\;C:\Program Files\nodejs\;C:\Program Files (x86)\Yarn\bin\;C:\Users\aker\AppData\Local\Microsoft\WindowsApps;C:\Users\aker\AppData\Local\Programs\Microsoft VS Code\bin;C:\Users\aker\AppData\Roaming\npm;C:\Users\aker\AppData\Local\Yarn\bin
+  /Users/aker/.rvm/gems/ruby-2.6.0/bin:/Users/aker/.rvm/gems/ruby-2.6.0@global/bin:/Users/aker/.rvm/rubies/ruby-2.6.0/bin:/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin:/Users/aker/.rvm/gems/ruby-2.6.0/bin:/Users/aker/.rvm/gems/ruby-2.6.0@global/bin:/Users/aker/.rvm/rubies/ruby-2.6.0/bin:/Users/aker/.rvm/bin:/Users/aker/.rvm/bin
 
 Yarn version: 
-  1.17.3
+  1.15.2
 
 Node version: 
-  10.16.0
+  10.15.3
 
 Platform: 
-  win32 x64
+  darwin x64
 
 Trace: 
-  Error: EPERM: operation not permitted, unlink 'Y:\learnningEntrance\tinytiny\node_modules\node-pre-gyp\node_modules\.bin\needle'
+  Error: https://registry.yarnpkg.com/uglify-webpack-plugin: Not found
+      at Request.params.callback [as _callback] (/usr/local/Cellar/yarn/1.15.2/libexec/lib/cli.js:66058:18)
+      at Request.self.callback (/usr/local/Cellar/yarn/1.15.2/libexec/lib/cli.js:129541:22)
+      at Request.emit (events.js:189:13)
+      at Request.<anonymous> (/usr/local/Cellar/yarn/1.15.2/libexec/lib/cli.js:130513:10)
+      at Request.emit (events.js:189:13)
+      at IncomingMessage.<anonymous> (/usr/local/Cellar/yarn/1.15.2/libexec/lib/cli.js:130435:12)
+      at Object.onceWrapper (events.js:277:13)
+      at IncomingMessage.emit (events.js:194:15)
+      at endReadableNT (_stream_readable.js:1125:12)
+      at process._tickCallback (internal/process/next_tick.js:63:19)
 
 npm manifest: 
   {
@@ -26,6 +36,8 @@ npm manifest:
     "main": "./dist/electron/main.js",
     "scripts": {
       "build": "node .electron-vue/build.js && electron-builder",
+      "build:mac": "node .electron-vue/build.js && electron-builder",
+      "build:win": "node .electron-vue/build.js && electron-builder -w",
       "build:dir": "node .electron-vue/build.js && electron-builder --dir",
       "build:clean": "cross-env BUILD_TARGET=clean node .electron-vue/build.js",
       "build:web": "cross-env BUILD_TARGET=web node .electron-vue/build.js",
