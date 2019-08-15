@@ -29,8 +29,8 @@ This project was generated with [electron-vue](https://github.com/SimulatedGREG/
 
 ## TODOs
 
-- [] concurentlly start task (current: serially)
+- [ ] concurentlly start task (current: serially)
 
-- [] remember user last select path
+- [ ] remember user last select path
 
-- [] user check out whether PROGRAM "cover source (together with a new directory)" or "a new directory name 'tiny'(COMPLETE)"
+- [ ] user check out whether PROGRAM "cover source (together with a new directory)" or "a new directory name 'tiny'(COMPLETE)"
