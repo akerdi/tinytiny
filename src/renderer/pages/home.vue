@@ -1,6 +1,7 @@
 <template lang="pug">
   div
     main.flex-colume-center.f-m-t-44
+      .header
       span.maxWidth450 &nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp本程序帮助用户选取压缩文件. 请选中下面按钮选取要进行压缩的文件目录, 目录查找层级为1层.
       div.f-m-t-10
         el-button(:disabled="startCompressing" type="primary" @click="buttonClick") 选取读取的目录
@@ -117,7 +118,12 @@ export default {
 
 <style <style lang="scss">
   @import url('https://fonts.googleapis.com/css?family=Source+Sans+Pro');
-
+  .header{
+    background: #ccc;
+    width: 100%;
+    height: 50px;
+    -webkit-app-region: drag;
+  }
   * {
     box-sizing: border-box;
     margin: 0;
