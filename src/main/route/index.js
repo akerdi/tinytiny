@@ -188,7 +188,7 @@ const startCompressImgFile = async () => {
 const dialogToGetFilePath = () => {
   dialog.showOpenDialog({properties: ['openDirectory'], title: '选取保存路径', message: '选取保存路径', nameFieldLabel: '选取保存路径'}, (fileNames) => {
     const message = {}
-    if (!fileNames.length) {
+    if (!fileNames || !fileNames.length) {
       message.err = "您没有选择保存的路径"
     } else {
       const fileName = fileNames[0]

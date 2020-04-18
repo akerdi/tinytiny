@@ -29,8 +29,12 @@ This project was generated with [electron-vue](https://github.com/SimulatedGREG/
 
 ## TODOs
 
-- [ ] concurentlly start task (current: serially)
+- [ ] 判别文件类型，使用后缀是否为 _.lowercase === [.jpg .jpeg .png ...]
 
-- [ ] remember user last select path
+- [ ] 本次任务是否tiny 图片资源
 
-- [ ] user check out whether PROGRAM "cover source (together with a new directory)" or "a new directory name 'tiny'(COMPLETE)"
+- [ ] 本次任务是否重命名 图片资源(打勾需要输入图片首名, 否则默认是default, 接下来文件名 + ' (index)')
+
+- [ ] 本次任务是否生成的新的同级文件夹置放对应资源(同级文件夹: 之前文件名+'_tinytiny')
+
+- [x] 当前确认使用串行执行操作

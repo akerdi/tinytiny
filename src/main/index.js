@@ -26,7 +26,10 @@ function createWindow () {
     height: 450,
     useContentSize: true,
     width: 500,
-    frame: false
+    frame: false,
+    movable: true,
+    closable: true,
+    title: "Tinytiny"
   })
   mainWindow.loadURL(winURL)
   mainWindow.on('closed', () => {
