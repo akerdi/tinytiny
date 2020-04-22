@@ -18,6 +18,7 @@ import SendRoute from '../utils/sendRoute'
 const fsreadirAsync = util.promisify(fs.readdir)
 const fsexistAsync = util.promisify(fs.exists)
 const fsmkdirAsync = util.promisify(fs.mkdir)
+const fsStateAsync = util.promisify(fs.stat)
 
 let selectPath = ''
 let tinytinyPath = ''
@@ -203,25 +204,55 @@ const dialogToGetFilePath = () => {
   })
 }
 
+/**
+ * 根据目录名获取所有符合条件的图片资源
+ * @param directoryPath required string absolute path
+ */
+async function getFiles(directoryPath) {
+  const sources = []
+  const files = await fsreadirAsync(directoryPath)
+  for (const pathname of files) {
+    if (_.includes([".DS_Store"], pathname)) continue
+    const newPath = path.join(directoryPath, pathname)
+    const [statErr, stat] = await callAsync(fsStateAsync(newPath))
+    if (statErr) {
+      console.error(`[route.readFileList] path:${newPath} stat err: `, statErr)
+      continue
+    }
+    ////////////// 处理pathname 逻辑
+    if (stat.isDirectory()) {
+      // 往深度遍历出所有的file
+      const [err, ress] = await callAsync(getFiles(newPath))
+      if (err) {
+        console.error(`[index.getFiles] path: ${newPath} get getFiles err:`, err)
+        continue
+      }
+      sources.push(...ress)
+    } else if (stat.isFile()) {
+      const extname = path.extname(pathname)
+      const arr = extname.split(".")
+      let ext = ""
+      if (arr.length === 1) ext = arr[0]
+      else ext = arr[1]
+      ext = _.lowerCase(ext)
+      if (_.indexOf(['jpg', 'jpeg', 'png'], ext) === -1) continue
+      sources.push(newPath)
+    }
+  }
+  return sources
+}
+
 async function readFileList(readFilePath) {
-  const [err, res] = await callAsync(fsreadirAsync(readFilePath))
+  const[getFilesErr, sources] = await callAsync(getFiles(readFilePath))
+  console.log(`[route.readFileList] path: ${readFilePath} sources: `, sources);
+
   const message = {}
-  if (err) {
+  if (getFilesErr) {
     message.code = 500
-    message.err = err
+    message.err = getFilesErr
   } else {
     message.code = 200
-    message.res = res.filter(imgFileName => {
-      const fileTypeObject = getFileMimeType(path.join(readFilePath, imgFileName))
-      if (!fileTypeObject) {
-        logger('imgFileName:', imgFileName, ' getFileMimeType fail ')
-        return false
-      }
-      if (fileTypeObject.fileType === 'unknown') {
-        return _.endsWith(imgFileName, '.jpg') || _.endsWith(imgFileName, '.png') || _.endsWith(imgFileName, 'jpeg')
-      }
-      return _.indexOf(['jpg', 'png', 'jpeg'], fileTypeObject.fileType) !== -1
-    })
+    message.res = sources
     let index = -1
     message.res = message.res.map(imgFileName => {
       index ++
