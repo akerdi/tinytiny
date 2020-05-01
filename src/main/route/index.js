@@ -2,22 +2,20 @@ import { ipcMain, dialog, shell } from 'electron'
 import fs from 'fs'
 import path from 'path'
 import util from 'util'
-import callAsync from '../lib/awaitCall'
+import callAsync, { call } from '../lib/awaitCall'
 import tinify from 'tinify'
 import _ from 'lodash'
+import mkdirp from 'mkdirp'
 import {
   getCookie, getTinyKeyWithAmount, finishTask, userProfile,
   clearCookie, userLoginValidation, userRegister
 } from '../service'
 import User, { updateUserStatus } from '../user'
-import { getFileMimeType } from '../utils/fileOperation'
 import logger from '../utils/logger'
 
 import SendRoute from '../utils/sendRoute'
 
 const fsreadirAsync = util.promisify(fs.readdir)
-const fsexistAsync = util.promisify(fs.exists)
-const fsmkdirAsync = util.promisify(fs.mkdir)
 const fsStateAsync = util.promisify(fs.stat)
 
 let selectPath = ''
@@ -49,7 +47,7 @@ ipcMain.on('http', (event, message) => {
       imgObject.select = message.data.select
       break
     case 'startCompressImgFile':
-      startCompressImgFile()
+      startCompressImgFile(message.data.isTodoTiny, message.data.isTodoRename, message.data.renamePrefix)
       break
     case 'dialogToGetFilePath':
       dialogToGetFilePath()
@@ -75,7 +73,8 @@ const getUserProfile = async () => {
   // tell frontend to rerender!
 }
 
-const startCompressImgFile = async () => {
+const startCompressImgFile = async (isTodoTiny, isTodoRename, renamePrefix) => {
+  console.log(`startCompressImgFile: isTodoTiny: ${isTodoTiny} isTodoRename: ${isTodoRename} renamePrefisx: ${renamePrefix}`)
   const needCompressFiles = selectFiles.filter((f) => {
     return f.select === true
   })
@@ -102,17 +101,7 @@ const startCompressImgFile = async () => {
   let rowIndex = 0 // 使用账号从第一个开始, 逐个使用填充key 完毕
   let columnIndex = 0 // 每个账号量使用完毕，rowIndex+1, 使用下一个
 
-  // tinytiny 文件夹是否生成检查
-  const [existErr, existDir] = await callAsync(fsexistAsync(tinytinyPath))
-  if (existErr) throw err
-  if (!existDir) {
-    const [err] = await callAsync(fsmkdirAsync(tinytinyPath))
-    if (err) {
-      isStartedCompress = true
-      return SendRoute.sendHome('startCompressImgFileCallback', {err: err})
-    }
-  }
-
+  console.log("startCompressImgFile is starting now, env: ", DEBUG)
   //现在才开始压缩
   const files = needCompressFiles
   // 使用情况记录
@@ -138,19 +127,43 @@ const startCompressImgFile = async () => {
       imgFileObject.finishSuccess = true
       SendRoute.sendHome('indexImgIsFinished', { index: imgFileObject.index, success: imgFileObject.finishSuccess })
     } else {
-      const imgFileName = imgFileObject.imgPath
-      // const select = imgFileObject.select
-      const fromFile = path.join(selectPath, imgFileName)
-      const source = tinify.fromFile(fromFile)
-      const toFile = path.join(tinytinyPath, imgFileName)
-      const [err] = await callAsync(source.toFile(toFile))
-      imgFileObject.finish = true
-      if (err) {
-        logger('compress meet err with img:', imgFileObject)
-        logger('err:', err)
-        imgFileObject.finishSuccess = false
-        SendRoute.sendHome('indexImgIsFinished', { index: imgFileObject.index, success: false})
-        continue
+      const imgPath = imgFileObject.imgPath
+      const fromFile = path.join(selectPath, imgPath)
+      console.log("fromFile::: ", fromFile)
+      let toFile = ""
+      if (isTodoRename) {
+        const pathParse = path.parse(imgPath)
+        const newImgPath = path.join(pathParse.dir, renamePrefix+` (${index})`+pathParse.ext)
+        toFile = path.join(tinytinyPath, newImgPath)
+      } else {
+        toFile = path.join(tinytinyPath, imgPath)
+      }
+      const toFileParse = path.parse(toFile)
+      const currentToFileParseDir = toFileParse.dir
+      console.log("toFileParse::: ", toFileParse)
+      const [err] = await callAsync(mkdirp(currentToFileParseDir))
+      if (err) console.error("mkdir recursively err: ", err)
+      if (isTodoTiny) { // 压缩(如果有重命名，则路径直接给到)
+        logger("todo compress............................")
+        const source = tinify.fromFile(fromFile)
+        const [err] = await callAsync(source.toFile(toFile))
+        imgFileObject.finish = true
+        if (err) {
+          logger('compress meet err with img:', imgFileObject)
+          logger('err:', err)
+          imgFileObject.finishSuccess = false
+          SendRoute.sendHome('indexImgIsFinished', { index: imgFileObject.index, success: false})
+          continue
+        }
+      } else { // 重命名
+        logger("todo rename............................")
+        const [err] = await call(fs.copyFile, fromFile, toFile)
+        imgFileObject.finish = true
+        if (err) {
+          imgFileObject.finishSuccess = false
+          SendRoute.sendHome('indexImgIsFinished', { index: imgFileObject.index, success: false})
+          continue
+        }
       }
       if (useSituation[account.account]) {
         useSituation[account.account] ++
@@ -192,11 +205,7 @@ const dialogToGetFilePath = () => {
     if (!fileNames || !fileNames.length) {
       message.err = "您没有选择保存的路径"
     } else {
-      const fileName = fileNames[0]
-      message.err = null
-      const posix = path.parse(fileName)
-      message.path = posix.dir
-      selectPath = message.path
+      selectPath = fileNames[0]
       tinytinyPath = path.join(selectPath, 'tinytiny')
     }
     SendRoute.sendHome('getedFilePath', message)
@@ -244,8 +253,7 @@ async function getFiles(directoryPath) {
 
 async function readFileList(readFilePath) {
   const[getFilesErr, sources] = await callAsync(getFiles(readFilePath))
-  console.log(`[route.readFileList] path: ${readFilePath} sources: `, sources);
-
+  logger(`[route.readFileList] path: ${readFilePath} sources: `, sources);
   const message = {}
   if (getFilesErr) {
     message.code = 500
@@ -256,8 +264,10 @@ async function readFileList(readFilePath) {
     let index = -1
     message.res = message.res.map(imgFileName => {
       index ++
+      const relativePath = path.relative(readFilePath, imgFileName)
       return {
-        imgPath: imgFileName,
+        readFilePath,
+        imgPath: relativePath,
         select: true, // 任务是否选中为执行
         finish: false, // 任务是否处理过
         finishSuccess: false, // 任务处理过是否成功

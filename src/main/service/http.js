@@ -9,9 +9,9 @@ axios.defaults.withCredentials = true
 
 // TODO 读取根目录是否有.Tiny.ini 文件进行host 配置
 axios.defaults.baseURL = "http://budget.ahuang.ml"
-if (process.env.NODE_ENV === 'development') {
-  axios.defaults.baseURL = 'http://localhost:7700/'
-}
+// if (process.env.NODE_ENV === 'development') {
+//   axios.defaults.baseURL = 'http://localhost:7700/'
+// }
 
 export const baseURL = axios.defaults.baseURL
 console.log('axios.defaults.baseURL::: ', axios.defaults.baseURL)

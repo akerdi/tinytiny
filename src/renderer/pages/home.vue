@@ -1,29 +1,35 @@
 <template lang="pug">
-  div
-    main.flex-colume-center.f-m-t-44
+  .m-home
+    .flex-colume-center.f-m-t-44
       .header
-      span.maxWidth450 &nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp本程序帮助用户选取压缩文件. 请选中下面按钮选取要进行压缩的文件目录, 目录查找层级为1层.
+      span.titleDescript 本程序帮助用户选取压缩文件. 请选中下面按钮选取要进行压缩的文件目录, 目录按照递归方式查找.
+      .execOptions
+        span 执行压缩文件
+        el-switch.f-m-l-20(v-model="isTodoTiny" :disabled="startCompressing")
+        span.f-m-l-50 执行重命名文件
+        el-switch.f-m-l-20(v-model="isTodoRename" :disabled="startCompressing")
+        el-input.input.f-m-l-20(v-if="isTodoRename" :disabled="startCompressing" v-model="renamePrefix" placeholder="重命名文件name. 默认: default")
       div.f-m-t-10
         el-button(:disabled="startCompressing" type="primary" @click="buttonClick") 选取读取的目录
       div.f-m-t-10
         span(v-show="fileList.length") 压缩文件目录: {{filePath}}
         span.f-m-t-10(v-show="!fileList.length") {{getFilePathErr}}
-      el-table.f-m-t-20.f-m-l-20.tableMarginBottom(:data='fileList' style='width: 500px'  highlight-current-row='')
-        el-table-column(type="index" align='left' width='40')
-          template(slot-scope='scope')
-            span {{scope.$index + 1}}
-        el-table-column(prop='imgPath' label='文件路径' width="300")
-        el-table-column(prop='select' label="是否选中" width="60")
-          template(slot-scope='scope')
-            el-checkbox(v-model="scope.row.select" @change="selectChange(scope.row, scope.$index)" :disabled="startCompressing")
-        el-table-column(prop='finish' label="是否完成" width="60")
-          template(slot-scope='scope')
-            el-checkbox(v-model="scope.row.success" :disabled="true")
+      .mainTable
+        el-table(:data='fileList'  highlight-current-row='')
+          el-table-column(type="index" align='left' width='40')
+            template(slot-scope='scope')
+              span {{scope.$index + 1}}
+          el-table-column(prop='imgPath' label='文件路径' width="300")
+          el-table-column(prop='select' label="选择" width="60")
+            template(slot-scope='scope')
+              el-checkbox(v-model="scope.row.select" @change="selectChange(scope.row, scope.$index)" :disabled="startCompressing")
+          el-table-column(prop='finish' label="执行状态" width="120")
+            template(slot-scope='scope')
+              el-checkbox(v-model="scope.row.success" :disabled="true")
       .tac(style="color: #545454") 更多咨询/定制/合作请联系QQ: 767838865
     .personal
       div 用户名: {{this.user.username}}
       div.f-m-t-5 剩&nbsp&nbsp&nbsp&nbsp余: {{this.user.rest}}
-    //- el-button.clearCookie(type="primary" @click='clearCookie') 清除Cookie
     el-button.startCompress(v-show="fileList.length" @click="startCompress" :loading="startCompressing" type="primary") {{compressBtnTitle}}
 </template>
 
@@ -38,6 +44,9 @@ export default {
       fileList: [], // png、jpeg、jpg 文件列出
       getFilePathErr: '',
       startCompressing: false,
+      isTodoRename: false, // 是否执行重命名
+      renamePrefix: 'default', // 重命名文件basename
+      isTodoTiny: true, // 是否执行tiny
       compressBtnTitle: '开始压缩',
       user: {
         username: '',
@@ -46,15 +55,18 @@ export default {
     }
   },
   methods: {
-    // clearCookie () {
-    //   HTTPSend('clearCookieAction', {})
-    // },
     buttonClick () {
       HTTPSend('dialogToGetFilePath')
     },
     startCompress () {
+      if (!this.isTodoRename && !this.isTodoTiny) return this.$message.info("请至少指定一种任务:【压缩 / 重命名】")
       this.startCompressing = true
-      HTTPSend('startCompressImgFile')
+      const params = {
+        isTodoTiny: this.isTodoTiny,
+        isTodoRename: this.isTodoRename,
+        renamePrefix: this.renamePrefix
+      }
+      HTTPSend('startCompressImgFile', params)
     },
     getUserProfile () {
       HTTPSend('getUserProfile')
@@ -118,6 +130,9 @@ export default {
 
 <style <style lang="scss">
   @import url('https://fonts.googleapis.com/css?family=Source+Sans+Pro');
+  .m-home {
+    margin: 0 auto;
+  }
   .header{
     background: #ccc;
     width: 100%;
@@ -129,17 +144,12 @@ export default {
     margin: 0;
     padding: 0;
   }
-
-  main {
-    max-width: 600px;
-    min-width: 500px;
-    margin: 0 auto;
-  }
   .tableMarginBottom {
     margin-bottom: 70px;
   }
-  .maxWidth450 {
-    max-width: 450px;
+  .titleDescript {
+    text-align: left;
+    max-width: 75%;
   }
 
   body {
@@ -158,14 +168,29 @@ export default {
     left: 50%;
     transform: translateX(-50%); // 这句话可以让position fixed 的div 居中
   }
+  .mainTable {
+    margin-top: 20px;
+    margin-bottom: 70px;
+    width: 75%;
+  }
   .personal {
     position: fixed;
     top: 20px;
     left: 20px;
-    max-width: 200px;
+    max-width: 230px;
     padding: 10px;
     background-color: white;
     opacity: 0.8;
+  }
+  .execOptions {
+    display: flex;
+    justify-content: start;
+    align-items: center;
+    width: 75%;
+    height: 70px;
+    .input {
+      width: 30%;
+    }
   }
 </style>
 

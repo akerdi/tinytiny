@@ -29,11 +29,11 @@ This project was generated with [electron-vue](https://github.com/SimulatedGREG/
 
 ## TODOs
 
-- [ ] 本次任务是否执行tiny 图片资源
+- [x] 本次任务是否执行tiny 图片资源
 
-- [ ] 本次任务是否重命名 图片资源(打勾需要输入图片首名, 否则默认是default, 接下来文件名 + ' (index)')
+- [x] 本次任务是否重命名 图片资源(打勾需要输入图片首名, 否则默认是default, 接下来文件名 + ' (index)')
 
-- [ ] 本次任务是否生成的新的同级文件夹置放对应资源(同级文件夹: 之前文件名+'_tinytiny')
+- [x] 本次任务是否生成的新的同级文件夹置放对应资源(同级文件夹: 之前文件名+'_tinytiny')
 
 - [x] 判别文件类型，使用后缀是否为 _.lowercase === [.jpg .jpeg .png ...]
 
