@@ -1,5 +1,8 @@
 # tinytiny
 
+![tiny00](/ReadME_img/tiny00.png)
+![tiny01](/ReadME_img/tiny01.png)
+
 This project was generated with [electron-vue](https://github.com/SimulatedGREG/electron-vue) using [vue-cli](https://github.com/vuejs/vue-cli). Documentation about the original structure can be found [here](https://simulatedgreg.gitbooks.io/electron-vue/content/index.html).
 
 # Other important progress learning skill
