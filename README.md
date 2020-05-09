@@ -32,6 +32,10 @@ This project was generated with [electron-vue](https://github.com/SimulatedGREG/
 
 ## TODOs
 
+- [ ] 增加图片大小调整（module gm）, 用户可填写目标大小
+
+- [ ] 用户不做tiny 时，不消耗使用量
+
 - [x] 本次任务是否执行tiny 图片资源
 
 - [x] 本次任务是否重命名 图片资源(打勾需要输入图片首名, 否则默认是default, 接下来文件名 + ' (index)')
